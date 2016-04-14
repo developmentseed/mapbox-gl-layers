@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "budo dist/mapbox-gl-layers:index.js -- --standalone MapboxGLLayers -g yo-yoify",
     "test": "eslint .",
     "bundle": "browserify --standalone MapboxGLLayers -g yo-yoify index.js > dist/mapbox-gl-layers.js",
     "docs": "documentation readme -s API"
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "browserify": "^13.0.0",
+    "budo": "^8.2.1",
     "documentation": "^4.0.0-beta2",
     "eslint": "^2.7.0",
     "eslint-config-standard": "^5.1.0",

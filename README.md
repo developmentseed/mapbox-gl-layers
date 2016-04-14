@@ -68,3 +68,14 @@ Creates a layer toggle control
 (new Layers({ 'National Parks': 'national_park', 'Other Parks': 'parks' }))
 .addTo(map)
 ```
+
+## Contributing
+
+This is an [OPEN open source](http://openopensource.org/) project.
+Contributions are welcome!
+
+Steps:
+
+1.  Clone the repo and run `npm install`.
+2.  Start test server with `npm start`, open <http://localhost:9966/example.html>,
+    and start make changes to `index.js` and friends.
