@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.17.0/mapbox-gl.js'></script>
+    <script src='dist/mapbox-gl-layers.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.17.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='dist/mapbox-gl-layers.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJjaW4wOW1taTkwN3c5d2tsdXg3aXRrMjZhIn0.QpBLQwr3XzYs6xh6b8hbcQ';
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v8', //stylesheet location
+    center: [-74.50, 40], // starting position
+    zoom: 9 // starting zoom
+});
+
+map.on('style.load', function () {
+  new MapboxGLLayers({
+    layers: {
+      'ALL PARKS': ['national_park', 'parks'],
+      'National Parks': 'national_park',
+      'Other Parks': 'parks'
+    }
+  }).addTo(map);
+})
+
+</script>
+
+</body>
+</html>
