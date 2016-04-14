@@ -7,7 +7,8 @@ module.exports = Layers
 /**
  * Creates a layer toggle control
  * @param {Object} [options]
- * @param {Object} [options.layers] An object determining which layers to include in the toggle.  Each key is a display name (what's shown in the UI), and each value is the corresponding layer id in the map style.
+ * @param {string} [options.type='multiple'] Selection type: `multiple` to allow independently toggling each layer/group, `single` to only choose one at a time.
+ * @param {Object} [options.layers] An object determining which layers to include.  Each key is a display name (what's shown in the UI), and each value is the corresponding layer id in the map style (or an array of layer ids).
  * @param {string} [options.position='top-right'] A string indicating position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`.
  * @example
  * (new Layers({ 'National Parks': 'national_park', 'Other Parks': 'parks' })).addTo(map)
@@ -32,7 +33,7 @@ function Layers (options) {
 
 Layers.prototype = Object.create(Control.prototype)
 Layers.prototype.constructor = Layers
-Layers.prototype.options = { position: 'top-right' }
+Layers.prototype.options = { position: 'top-right', type: 'multiple' }
 Layers.prototype.onAdd = function onAdd (map) {
   this._map = map
   var style = map.getStyle()
@@ -157,10 +158,26 @@ appendChild(bel0, ["\n          ",arguments[3],"\n        "])
 Layers.prototype._onClick = function _onClick (e) {
   var ids = e.currentTarget.getAttribute('data-layer-id').split(',')
     .filter(this._layerExists)
-  var visibility = ids.some(this._isActive) ? 'none' : 'visible'
-  ids.forEach((id) => {
-    this._map.setLayoutProperty(id, 'visibility', visibility)
-  })
+
+  if (this.options.type === 'single') {
+    // single selection mode
+    if (this._currentSelection) {
+      this._currentSelection.forEach((id) => {
+        this._map.setLayoutProperty(id, 'visibility', 'none')
+      })
+    }
+    // turn on any layer that IS in the selected group
+    ids.forEach((id) => {
+      this._map.setLayoutProperty(id, 'visibility', 'visible')
+    })
+    this._currentSelection = ids
+  } else {
+    // 'toggle' mode
+    var visibility = ids.some(this._isActive) ? 'none' : 'visible'
+    ids.forEach((id) => {
+      this._map.setLayoutProperty(id, 'visibility', visibility)
+    })
+  }
 }
 
 Layers.prototype._isActive = function isActive (id) {
