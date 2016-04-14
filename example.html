@@ -26,6 +26,10 @@ var map = new mapboxgl.Map({
 });
 
 map.on('style.load', function () {
+  // defaults to using all layers in the style, grouped as they are
+  // in Mapbox Studio
+  new MapboxGLLayers({position: 'top-left'}).addTo(map);
+
   new MapboxGLLayers({
     layers: {
       'ALL PARKS': ['national_park', 'parks'],

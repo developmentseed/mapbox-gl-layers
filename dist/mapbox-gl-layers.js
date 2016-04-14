@@ -13,14 +13,16 @@ module.exports = Layers
  * (new Layers({ 'National Parks': 'national_park', 'Other Parks': 'parks' })).addTo(map)
  */
 function Layers (options) {
-  Object.assign(this.options, options)
-  // normalize opts a bit
-  var layers = {}
-  for (var k in this.options.layers) {
-    layers[k] = Array.isArray(this.options.layers[k])
-      ? this.options.layers[k] : [this.options.layers[k]]
+  this.options = Object.assign({}, this.options, options)
+  if (options.layers) {
+    // normalize layers to arrays
+    var layers = {}
+    for (var k in this.options.layers) {
+      layers[k] = Array.isArray(this.options.layers[k])
+        ? this.options.layers[k] : [this.options.layers[k]]
+    }
+    this.options.layers = layers
   }
-  this.options.layers = layers
 
   this._onClick = this._onClick.bind(this)
   this._isActive = this._isActive.bind(this)
@@ -33,10 +35,26 @@ Layers.prototype.constructor = Layers
 Layers.prototype.options = { position: 'top-right' }
 Layers.prototype.onAdd = function onAdd (map) {
   this._map = map
-  this._allLayers = this._map.getStyle().layers.map((layer) => layer.id)
+  var style = map.getStyle()
+  this._allLayers = style.layers.map((layer) => layer.id)
   if (!this.options.layers) {
     this.options.layers = {}
-    this._allLayers.forEach((id) => { this.options.layers[id] = [id] })
+
+    // if there's Mapbox Studio metadata available, use any groups we can find
+    var groups = {}
+    if (style.metadata && style.metadata['mapbox:groups']) {
+      groups = style.metadata['mapbox:groups']
+      Object.keys(groups).forEach((g) => { this.options.layers[groups[g].name] = [] })
+    }
+
+    style.layers.forEach((layer) => {
+      var group = layer.metadata ? groups[layer.metadata['mapbox:group']] : null
+      if (layer.metadata && group) {
+        this.options.layers[group.name].push(layer.id)
+      } else {
+        this.options.layers[layer.id] = [layer.id]
+      }
+    })
   }
   this._map.on('style.change', this._update)
   this._map.style.on('layer.remove', this._update)
@@ -140,9 +158,7 @@ Layers.prototype._onClick = function _onClick (e) {
   var ids = e.currentTarget.getAttribute('data-layer-id').split(',')
     .filter(this._layerExists)
   var visibility = ids.some(this._isActive) ? 'none' : 'visible'
-  console.log(ids, visibility)
   ids.forEach((id) => {
-    console.log(id, visibility)
     this._map.setLayoutProperty(id, 'visibility', visibility)
   })
 }
@@ -152,7 +168,6 @@ Layers.prototype._isActive = function isActive (id) {
 }
 
 Layers.prototype._layerExists = function (id) {
-  console.log(id, this._allLayers.indexOf(id))
   return this._allLayers.indexOf(id) >= 0
 }
 
