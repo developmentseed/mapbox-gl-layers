@@ -25,6 +25,7 @@ function Layers (options) {
   this._onClick = this._onClick.bind(this)
   this._isActive = this._isActive.bind(this)
   this._layerExists = this._layerExists.bind(this)
+  this._update = this._update.bind(this)
 }
 
 Layers.prototype = Object.create(Control.prototype)
@@ -37,12 +38,22 @@ Layers.prototype.onAdd = function onAdd (map) {
     this.options.layers = {}
     this._allLayers.forEach((id) => { this.options.layers[id] = [id] })
   }
-  this._map.on('render', () => {
-    yo.update(this._container, this._render())
-  })
+  this._map.on('style.change', this._update)
+  this._map.style.on('layer.remove', this._update)
+  this._map.style.on('layer.add', this._update)
   return this._render()
 }
 
+Layers.prototype.onRemove = function onRemove () {
+  this._map.off('style.change', this._update)
+  this._map.style.off('layer.remove', this._update)
+  this._map.style.off('layer.add', this._update)
+}
+
+Layers.prototype._update = function _update () {
+  this._allLayers = this._map.getStyle().layers.map((layer) => layer.id)
+  yo.update(this._container, this._render())
+}
 Layers.prototype._render = function _render () {
   var layers = this.options.layers
   var className = 'mapboxgl-layers'
@@ -81,6 +92,7 @@ appendChild(bel0, ["\n    ",arguments[0],"\n    "])
 appendChild(bel1, ["\n    ",bel0,"\n  "])
           return bel1
         }(Object.keys(layers)
+      .filter((name) => layers[name].some(this._layerExists))
       .map((name) => {
         var ids = layers[name].filter(this._layerExists)
         var className = ids.every(this._isActive) ? 'active'
