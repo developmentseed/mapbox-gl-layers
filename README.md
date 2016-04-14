@@ -1,4 +1,6 @@
-# Layer toggle for Mapbox GL JS
+# mapbox-gl-layers
+
+Layer toggle for [Mapbox GL JS](https://www.mapbox.com/mapbox-gl-js/)
 
 ## Install
 
@@ -45,5 +47,4 @@ map.on('style.load', function () {
 })
 </script>
 ```
-
 
