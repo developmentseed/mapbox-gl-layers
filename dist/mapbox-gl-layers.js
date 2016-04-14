@@ -11,7 +11,8 @@ module.exports = Layers
  * @param {Object} [options.layers] An object determining which layers to include.  Each key is a display name (what's shown in the UI), and each value is the corresponding layer id in the map style (or an array of layer ids).
  * @param {string} [options.position='top-right'] A string indicating position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`.
  * @example
- * (new Layers({ 'National Parks': 'national_park', 'Other Parks': 'parks' })).addTo(map)
+ * (new Layers({ 'National Parks': 'national_park', 'Other Parks': 'parks' }))
+ * .addTo(map)
  */
 function Layers (options) {
   this.options = Object.assign({}, this.options, options)
