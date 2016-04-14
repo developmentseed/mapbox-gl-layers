@@ -15,9 +15,6 @@
   position: relative;
   margin: 0 5px;
 }
-.mapboxgl-layers li:hover {
-  background-color: #eee;
-}
 .mapboxgl-layers li.active:before {
   position: absolute;
   right: 100%;
