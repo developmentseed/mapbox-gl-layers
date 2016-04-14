@@ -1,3 +1,5 @@
+[![Circle CI](https://circleci.com/gh/developmentseed/mapbox-gl-layers.svg?style=svg)](https://circleci.com/gh/developmentseed/mapbox-gl-layers)
+
 # mapbox-gl-layers
 
 Layer toggle for [Mapbox GL JS](https://www.mapbox.com/mapbox-gl-js/)
