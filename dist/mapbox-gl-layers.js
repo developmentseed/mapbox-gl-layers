@@ -14,7 +14,17 @@ module.exports = Layers
  */
 function Layers (options) {
   Object.assign(this.options, options)
+  // normalize opts a bit
+  var layers = {}
+  for (var k in this.options.layers) {
+    layers[k] = Array.isArray(this.options.layers[k])
+      ? this.options.layers[k] : [this.options.layers[k]]
+  }
+  this.options.layers = layers
+
   this._onClick = this._onClick.bind(this)
+  this._isActive = this._isActive.bind(this)
+  this._layerExists = this._layerExists.bind(this)
 }
 
 Layers.prototype = Object.create(Control.prototype)
@@ -25,13 +35,14 @@ Layers.prototype.onAdd = function onAdd (map) {
   this._allLayers = this._map.getStyle().layers.map((layer) => layer.id)
   if (!this.options.layers) {
     this.options.layers = {}
-    this._allLayers.forEach((id) => { this.options.layers[id] = id })
+    this._allLayers.forEach((id) => { this.options.layers[id] = [id] })
   }
   this._map.on('render', () => {
     yo.update(this._container, this._render())
   })
   return this._render()
 }
+
 Layers.prototype._render = function _render () {
   var layers = this.options.layers
   var className = 'mapboxgl-layers'
@@ -71,21 +82,11 @@ appendChild(bel1, ["\n    ",bel0,"\n  "])
           return bel1
         }(Object.keys(layers)
       .map((name) => {
-        var id = layers[name]
-        return renderLayerItem(id, name, this._onClick, isActive(this._map, id))
-      }),className))
-}
-Layers.prototype._onClick = function _onClick (e) {
-  var id = e.currentTarget.getAttribute('data-layer-id')
-  console.log(id)
-  if (this._allLayers.indexOf(id) < 0) { return }
-  var visibility = isActive(this._map, id) ? 'none' : 'visible'
-  this._map.setLayoutProperty(id, 'visibility', visibility)
-}
-
-function renderLayerItem (id, name, onclick, active) {
-  var className = active ? 'active' : ''
-  return (function () {
+        var ids = layers[name].filter(this._layerExists)
+        var className = ids.every(this._isActive) ? 'active'
+          : ids.some(this._isActive) ? 'active partially-active'
+          : ''
+        return (function () {
           function appendChild (el, childs) {
             for (var i = 0; i < childs.length; i++) {
               var node = childs[i];
@@ -117,13 +118,30 @@ function renderLayerItem (id, name, onclick, active) {
 bel0.setAttribute("data-layer-id", arguments[0])
 bel0["onclick"] = arguments[1]
 bel0.setAttribute("class", arguments[2])
-appendChild(bel0, [arguments[3]])
+appendChild(bel0, ["\n          ",arguments[3],"\n        "])
           return bel0
-        }(id,onclick,className,name))
+        }(ids.join(','),this._onClick,className,name))
+      }),className))
 }
 
-function isActive (map, id) {
-  return map.getLayoutProperty(id, 'visibility') === 'visible'
+Layers.prototype._onClick = function _onClick (e) {
+  var ids = e.currentTarget.getAttribute('data-layer-id').split(',')
+    .filter(this._layerExists)
+  var visibility = ids.some(this._isActive) ? 'none' : 'visible'
+  console.log(ids, visibility)
+  ids.forEach((id) => {
+    console.log(id, visibility)
+    this._map.setLayoutProperty(id, 'visibility', visibility)
+  })
+}
+
+Layers.prototype._isActive = function isActive (id) {
+  return this._map.getLayoutProperty(id, 'visibility') === 'visible'
+}
+
+Layers.prototype._layerExists = function (id) {
+  console.log(id, this._allLayers.indexOf(id))
+  return this._allLayers.indexOf(id) >= 0
 }
 
 
