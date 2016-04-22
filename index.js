@@ -75,7 +75,7 @@ Layers.prototype._update = function _update () {
 }
 Layers.prototype._render = function _render () {
   var layers = this.options.layers
-  var className = 'mapboxgl-layers'
+  var className = 'mapboxgl-ctrl mapboxgl-layers'
   return yo`
   <div class="${className}">
     <ul>

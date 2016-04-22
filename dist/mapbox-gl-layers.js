@@ -76,7 +76,7 @@ Layers.prototype._update = function _update () {
 }
 Layers.prototype._render = function _render () {
   var layers = this.options.layers
-  var className = 'mapboxgl-layers'
+  var className = 'mapboxgl-ctrl mapboxgl-layers'
   return (function () {
           function appendChild (el, childs) {
             for (var i = 0; i < childs.length; i++) {
