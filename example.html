@@ -35,7 +35,8 @@ map.on('style.load', function () {
       'ALL PARKS': ['national_park', 'parks'],
       'National Parks': 'national_park',
       'Other Parks': 'parks'
-    }
+    },
+    onChange: function (selected) { console.log('Selected:', selected); }
   }).addTo(map);
 })
 

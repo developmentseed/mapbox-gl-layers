@@ -9,6 +9,7 @@ module.exports = Layers
  * @param {string} [options.type='multiple'] Selection type: `multiple` to allow independently toggling each layer/group, `single` to only choose one at a time.
  * @param {Object} [options.layers] An object determining which layers to include.  Each key is a display name (what's shown in the UI), and each value is the corresponding layer id in the map style (or an array of layer ids).
  * @param {string} [options.position='top-right'] A string indicating position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`.
+ * @param {function} [options.onChange] Optional callback called with `{name: dispayName, layerIds: [...], active: true|false }` for the clicked layer
  * @example
  * (new Layers({ 'National Parks': 'national_park', 'Other Parks': 'parks' }))
  * .addTo(map)
@@ -87,7 +88,7 @@ Layers.prototype._render = function _render () {
           : ids.some(this._isActive) ? 'active partially-active'
           : ''
         return yo`
-        <li data-layer-id=${ids.join(',')} class=${className} onclick=${this._onClick}>
+        <li data-layer-name=${name} data-layer-id=${ids.join(',')} class=${className} onclick=${this._onClick}>
           ${name}
         </li>`
       })}
@@ -100,6 +101,7 @@ Layers.prototype._onClick = function _onClick (e) {
   var ids = e.currentTarget.getAttribute('data-layer-id').split(',')
     .filter(this._layerExists)
 
+  var activated = false
   if (this.options.type === 'single') {
     // single selection mode
     if (this._currentSelection) {
@@ -112,11 +114,21 @@ Layers.prototype._onClick = function _onClick (e) {
       this._map.setLayoutProperty(id, 'visibility', 'visible')
     })
     this._currentSelection = ids
+    activated = true
   } else {
     // 'toggle' mode
     var visibility = ids.some(this._isActive) ? 'none' : 'visible'
     ids.forEach((id) => {
       this._map.setLayoutProperty(id, 'visibility', visibility)
+    })
+    activated = visibility === 'visible'
+  }
+
+  if (this.options.onChange) {
+    this.options.onChange({
+      name: e.currentTarget.getAttribute('data-layer-name'),
+      layerIds: ids,
+      active: activated
     })
   }
 }

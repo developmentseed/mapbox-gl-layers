@@ -10,6 +10,7 @@ module.exports = Layers
  * @param {string} [options.type='multiple'] Selection type: `multiple` to allow independently toggling each layer/group, `single` to only choose one at a time.
  * @param {Object} [options.layers] An object determining which layers to include.  Each key is a display name (what's shown in the UI), and each value is the corresponding layer id in the map style (or an array of layer ids).
  * @param {string} [options.position='top-right'] A string indicating position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`.
+ * @param {function} [options.onChange] Optional callback called with `{name: dispayName, layerIds: [...], active: true|false }` for the clicked layer
  * @example
  * (new Layers({ 'National Parks': 'national_park', 'Other Parks': 'parks' }))
  * .addTo(map)
@@ -147,12 +148,13 @@ appendChild(bel1, ["\n    ",bel0,"\n  "])
             }
           }
           var bel0 = document.createElement("li")
-bel0.setAttribute("data-layer-id", arguments[0])
-bel0["onclick"] = arguments[1]
-bel0.setAttribute("class", arguments[2])
-appendChild(bel0, ["\n          ",arguments[3],"\n        "])
+bel0.setAttribute("data-layer-name", arguments[0])
+bel0.setAttribute("data-layer-id", arguments[1])
+bel0["onclick"] = arguments[2]
+bel0.setAttribute("class", arguments[3])
+appendChild(bel0, ["\n          ",arguments[4],"\n        "])
           return bel0
-        }(ids.join(','),this._onClick,className,name))
+        }(name,ids.join(','),this._onClick,className,name))
       }),className))
 }
 
@@ -160,6 +162,7 @@ Layers.prototype._onClick = function _onClick (e) {
   var ids = e.currentTarget.getAttribute('data-layer-id').split(',')
     .filter(this._layerExists)
 
+  var activated = false
   if (this.options.type === 'single') {
     // single selection mode
     if (this._currentSelection) {
@@ -172,11 +175,21 @@ Layers.prototype._onClick = function _onClick (e) {
       this._map.setLayoutProperty(id, 'visibility', 'visible')
     })
     this._currentSelection = ids
+    activated = true
   } else {
     // 'toggle' mode
     var visibility = ids.some(this._isActive) ? 'none' : 'visible'
     ids.forEach((id) => {
       this._map.setLayoutProperty(id, 'visibility', visibility)
+    })
+    activated = visibility === 'visible'
+  }
+
+  if (this.options.onChange) {
+    this.options.onChange({
+      name: e.currentTarget.getAttribute('data-layer-name'),
+      layerIds: ids,
+      active: activated
     })
   }
 }
